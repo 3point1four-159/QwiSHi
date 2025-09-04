@@ -1,0 +1,53 @@
+# Default ignored files
+*.iml
+*.iws
+.idea/modules.xml
+.idea/*.ipr
+.idea/workspace.xml
+
+# User-specific files
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/dictionaries
+.idea/vcs.xml
+.idea/jsLibraryMappings.xml
+
+# Sensitive or high-churn files
+.idea/dataSources/
+.idea/dataSources.ids
+.idea/dataSources.local.xml
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/uiDesigner.xml
+.idea/assetWizardSettings.xml
+.idea/copyright/
+.idea/jarRepositories.xml
+.idea/libraries/
+.idea/gradle.xml
+.idea/markdown-navigator.xml
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Logs and reports
+log/
+logs/
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Build output directories (if applicable)
+out/
+build/
+
+# Other IDEs or tools specific files (if applicable)
+.vscode/
+nbproject/private/
+
+# JetBrains IDEs specific files (if applicable)
+.idea
+/shelf/
+/workspace.xml
