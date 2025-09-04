@@ -1,0 +1,20 @@
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /pending_verification/{contractorId} {
+      allow create: if request.auth != null;
+      allow read, update: if isAdmin();
+      allow read: if request.auth.uid == contractorId;
+    }
+
+    match /verified_contractors/{contractorId} {
+      allow read: if request.auth != null;
+      allow update: if isAdmin();
+    }
+
+    function isAdmin() {
+      return request.auth.token.role == 'admin';
+    }
+  }
+}
