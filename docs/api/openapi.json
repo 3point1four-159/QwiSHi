@@ -1,219 +1,314 @@
-openapi: 3.0.0
-info:
-title: QwiSHi API
-version: v1
-description: API for QwiSHi application to manage shift openings.
-
-servers:
-- url: http://localhost:8080 # Replace with your actual server URL
-description: Development server
-
-components:
-schemas:
-ShiftOpeningRequest:
-type: object
-required:
-- companyId
-- locationSquareId
-- serviceVariationSquareId
-- startAt
-- endAt
-properties:
-companyId:
-type: string
-description: Your internal QwiSHi company ID.
-locationSquareId:
-type: string
-description: Square Location ID for the shift.
-serviceVariationSquareId:
-type: string
-description: Square Service Variation ID representing the shift type/role.
-teamMemberSquareId:
-type: string
-nullable: true
-description: Optional Square Team Member ID if pre-assigning or specific availability.
-startAt:
-type: string
-format: date-time
-description: ISO 8601 DateTime string for shift start.
-endAt:
-type: string
-format: date-time
-description: ISO 8601 DateTime string for shift end.
-notes:
-type: string
-nullable: true
-description: Additional notes for the shift.
-
-ShiftOpeningResponse:
-type: object
-properties:
-qwishiOpeningId:
-type: string
-description: QwiSHi's internal ID for this opening.
-squareAvailabilityId:
-type: string
-nullable: true
-description: ID from Square's Availability record, if one was created.
-squareBookingId:
-type: string
-nullable: true
-description: ID from Square's Booking record, if the shift is filled.
-companyId:
-type: string
-locationSquareId:
-type: string
-serviceVariationSquareId:
-type: string
-teamMemberSquareId:
-type: string
-nullable: true
-startAt:
-type: string
-format: date-time
-endAt:
-type: string
-format: date-time
-status:
-type: string
-enum: [OPEN, FILLED, CANCELLED]
-description: Current status of the opening.
-notes:
-type: string
-nullable: true
-
-FillShiftRequest:
-type: object
-required:
-- employeeQwishiId
-- employeeSquareTeamMemberId
-properties:
-employeeQwishiId:
-type: string
-description: QwiSHi ID of the employee filling the shift.
-employeeSquareTeamMemberId:
-type: string
-description: Square Team Member ID of the employee.
-customerNote:
-type: string
-nullable: true
-description: Note to add to the Square Booking.
-
-securitySchemes:
-ApiKeyAuth: # Example for basic API Key auth (not implemented in Ktor code above)
-type: apiKey
-in: header
-name: X-API-KEY
-
-paths:
-/openings:
-post:
-summary: Create a new shift opening
-tags:
-- Shift Openings
-requestBody:
-required: true
-content:
-application/json:
-schema:
-$ref: '#/components/schemas/ShiftOpeningRequest'
-responses:
-'201':
-description: Shift opening created successfully.
-content:
-application/json:
-schema:
-$ref: '#/components/schemas/ShiftOpeningResponse'
-'400':
-description: Invalid request payload.
-'401':
-description: Unauthorized (e.g., invalid company or missing Square token).
-'500':
-description: Internal server error (e.g., failed to interact with Square).
-get:
-summary: List open shifts
-tags:
-- Shift Openings
-parameters:
-- name: companyId
-in: query
-required: true
-schema:
-type: string
-description: QwiSHi company ID.
-- name: locationSquareId
-in: query
-required: true
-schema:
-type: string
-description: Square Location ID.
-- name: serviceVariationSquareId
-in: query
-required: true
-schema:
-type: string
-description: Square Service Variation ID for the shift type.
-- name: startAt
-in: query
-required: true
-schema:
-type: string
-format: date-time
-description: Beginning of the time range to search for openings (ISO 8601).
-- name: endAt
-in: query
-required: true
-schema:
-type: string
-format: date-time
-description: End of the time range to search for openings (ISO 8601).
-responses:
-'200':
-description: A list of open shifts.
-content:
-application/json:
-schema:
-type: array
-items:
-$ref: '#/components/schemas/ShiftOpeningResponse'
-'400':
-description: Missing required query parameters.
-'500':
-description: Internal server error.
-
-/openings/{openingId}/fill:
-post:
-summary: Fill (book) a specific shift opening
-tags:
-- Shift Openings
-parameters:
-- name: openingId
-in: path
-required: true
-schema:
-type: string
-description: The QwiSHi ID of the opening to fill.
-requestBody:
-required: true
-content:
-application/json:
-schema:
-$ref: '#/components/schemas/FillShiftRequest'
-responses:
-'200':
-description: Shift opening successfully filled.
-content:
-application/json:
-schema:
-$ref: '#/components/schemas/ShiftOpeningResponse' # Returns the updated opening
-'400':
-description: Invalid request payload.
-'401':
-description: Unauthorized.
-'404':
-description: Opening not found or already filled.
-'500':
-description: Internal server error (e.g., failed to create booking in Square).
-
-# security:  # Apply security globally or per operation
-#   - ApiKeyAuth: []
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "QwiSHi API",
+    "version": "v1",
+    "description": "API for QwiSHi application to manage shift openings."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Development server"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "ShiftOpeningRequest": {
+        "type": "object",
+        "required": [
+          "companyId",
+          "locationSquareId",
+          "serviceVariationSquareId",
+          "startAt",
+          "endAt"
+        ],
+        "properties": {
+          "companyId": {
+            "type": "string",
+            "description": "Your internal QwiSHi company ID."
+          },
+          "locationSquareId": {
+            "type": "string",
+            "description": "Square Location ID for the shift."
+          },
+          "serviceVariationSquareId": {
+            "type": "string",
+            "description": "Square Service Variation ID representing the shift type/role."
+          },
+          "teamMemberSquareId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Optional Square Team Member ID if pre-assigning or specific availability."
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 DateTime string for shift start."
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 DateTime string for shift end."
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "description": "Additional notes for the shift."
+          }
+        }
+      },
+      "ShiftOpeningResponse": {
+        "type": "object",
+        "properties": {
+          "qwishiOpeningId": {
+            "type": "string",
+            "description": "QwiSHi's internal ID for this opening."
+          },
+          "squareAvailabilityId": {
+            "type": "string",
+            "nullable": true,
+            "description": "ID from Square's Availability record, if one was created."
+          },
+          "squareBookingId": {
+            "type": "string",
+            "nullable": true,
+            "description": "ID from Square's Booking record, if the shift is filled."
+          },
+          "companyId": {
+            "type": "string"
+          },
+          "locationSquareId": {
+            "type": "string"
+          },
+          "serviceVariationSquareId": {
+            "type": "string"
+          },
+          "teamMemberSquareId": {
+            "type": "string",
+            "nullable": true
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OPEN",
+              "FILLED",
+              "CANCELLED"
+            ],
+            "description": "Current status of the opening."
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "FillShiftRequest": {
+        "type": "object",
+        "required": [
+          "employeeQwiSHiId",
+          "employeeSquareTeamMemberId"
+        ],
+        "properties": {
+          "employeeQwiSHiId": {
+            "type": "string",
+            "description": "QwiSHi ID of the employee filling the shift."
+          },
+          "employeeSquareTeamMemberId": {
+            "type": "string",
+            "description": "Square Team Member ID of the employee."
+          },
+          "customerNote": {
+            "type": "string",
+            "nullable": true,
+            "description": "Note to add to the Square Booking."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-KEY"
+      }
+    }
+  },
+  "paths": {
+    "/openings": {
+      "post": {
+        "summary": "Create a new shift opening",
+        "tags": [
+          "Shift Openings"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShiftOpeningRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Shift opening created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftOpeningResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request payload."
+          },
+          "401": {
+            "description": "Unauthorized (e.g., invalid company or missing Square token)."
+          },
+          "500": {
+            "description": "Internal server error (e.g., failed to interact with Square)."
+          }
+        }
+      },
+      "get": {
+        "summary": "List open shifts",
+        "tags": [
+          "Shift Openings"
+        ],
+        "parameters": [
+          {
+            "name": "companyId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "QwiSHi company ID."
+          },
+          {
+            "name": "locationSquareId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Square Location ID."
+          },
+          {
+            "name": "serviceVariationSquareId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Square Service Variation ID for the shift type."
+          },
+          {
+            "name": "startAt",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Beginning of the time range to search for openings (ISO 8601)."
+          },
+          {
+            "name": "endAt",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "End of the time range to search for openings (ISO 8601)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of open shifts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ShiftOpeningResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required query parameters."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/openings/{openingId}/fill": {
+      "post": {
+        "summary": "Fill (book) a specific shift opening",
+        "tags": [
+          "Shift Openings"
+        ],
+        "parameters": [
+          {
+            "name": "openingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The QwiSHi ID of the opening to fill."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FillShiftRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Shift opening successfully filled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftOpeningResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request payload."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Opening not found or already filled."
+          },
+          "500": {
+            "description": "Internal server error (e.g., failed to create booking in Square)."
+          }
+        }
+      }
+    }
+  }
+}
